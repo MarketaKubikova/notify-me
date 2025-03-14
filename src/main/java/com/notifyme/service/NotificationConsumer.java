@@ -1,5 +1,7 @@
 package com.notifyme.service;
 
+import com.notifyme.model.Notification;
+import com.notifyme.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -15,10 +17,9 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class NotificationConsumer {
 
-    /**
-     * ExecutorService for processing messages concurrently.
-     */
+    // Initializes an ExecutorService with a fixed thread pool of four threads.
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
+    private final NotificationRepository notificationRepository;
 
     /**
      * Listens to the specified Kafka topic and submits the received messages for processing.
@@ -37,5 +38,12 @@ public class NotificationConsumer {
      */
     private void processMessage(String message) {
         System.out.println("Processing notification: " + message);
+
+        Notification notification = new Notification();
+        notification.setTopic("notifications");
+        notification.setMessage(message);
+        notification.setDelivered(true);
+
+        notificationRepository.save(notification);
     }
 }
