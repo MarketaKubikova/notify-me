@@ -41,13 +41,31 @@ public class NotificationConsumer {
     private void processMessage(String message) {
         System.out.println("Processing notification: " + message);
 
-        Notification notification = new Notification();
-        notification.setTopic("notifications");
-        notification.setMessage(message);
-        notification.setDelivered(true);
+        Long userId = extractUserIdFromMessage(message);
 
-        notificationRepository.save(notification);
+        if (userId != null) {
+            Notification notification = new Notification();
+            notification.setTopic("notifications");
+            notification.setMessage(message);
+            notification.setDelivered(true);
+            notificationRepository.save(notification);
 
-        notificationWebSocketHandler.sendNotification(message);
+            // Send only to the specific user
+            notificationWebSocketHandler.sendNotificationToUser(userId, message);
+        }
+    }
+
+    /**
+     * Extracts the user ID from the notification message.
+     *
+     * @param message the notification message
+     * @return the extracted user ID, or null if extraction fails
+     */
+    private Long extractUserIdFromMessage(String message) {
+        try {
+            return Long.parseLong(message.split(":")[0]);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
