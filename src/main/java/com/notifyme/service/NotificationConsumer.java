@@ -2,6 +2,7 @@ package com.notifyme.service;
 
 import com.notifyme.model.Notification;
 import com.notifyme.repository.NotificationRepository;
+import com.notifyme.websocket.NotificationWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,6 +21,7 @@ public class NotificationConsumer {
     // Initializes an ExecutorService with a fixed thread pool of four threads.
     private final ExecutorService executorService = Executors.newFixedThreadPool(4);
     private final NotificationRepository notificationRepository;
+    private final NotificationWebSocketHandler notificationWebSocketHandler;
 
     /**
      * Listens to the specified Kafka topic and submits the received messages for processing.
@@ -45,5 +47,7 @@ public class NotificationConsumer {
         notification.setDelivered(true);
 
         notificationRepository.save(notification);
+
+        notificationWebSocketHandler.sendNotification(message);
     }
 }
